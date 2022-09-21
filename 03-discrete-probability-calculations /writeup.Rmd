@@ -16,7 +16,26 @@ knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, cache=TRUE)
 
 # Introduction 
 
-## There are five questions to answer
+## Background
+
+- Bernoulli random variable
+
+A process or experiment that generates a binary outcome (0 or 1; heads or tails; success or failure)  
+Successive replications of the process are independent
+The probability P(outcome = 1) is constant.  
+
+- Binomial random variable
+
+The number of successes in a Bernoulli sequence  
+Bernoulli properties still apply: independent outcomes, constant probability  
+
+- Negative binomial random variable  
+
+The number of failures before the $K^{th}$ success in a Bernoulli sequence is a K negative binomial random variable  
+Bernoulli properties still apply: independent outcomes, constant probability
+
+
+## There are five questions
 
 1. What is the probability that the Braves win the World Series given that $P_B$ = 0.55?
 2. What is the probability that the Braves win the World Series given that $P_B$ = x? This will be a figure (see below) with $P_B$ on the x-axis and
