@@ -35,7 +35,7 @@ library(tidyverse)
 ```
 
 ## For the first question
-
+ 
 - There are three different solutions which can be used to solve the question.
 
 - First, using **Binomial Distribution**. As the rule says, the first team to win 4 out of 7 games wins the championship, if Braves want to win the World Series, they must win the fourth game before Yankees win the fourth game. So I will list all possible senarios to illustrate the probability.  
