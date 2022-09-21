@@ -1,0 +1,173 @@
+---
+title: "Deliverable3"
+author: ' Jiayu Shi'
+output:
+  html_document:
+    code_folding: hide
+    toc: yes
+    number_sections: yes
+    toc_depth: 3
+    toc_float: yes
+---
+
+```{r global options, include = FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE, cache=TRUE)
+```
+
+# Introduction 
+
+## There are five questions to answer
+
+1. What is the probability that the Braves win the World Series given that $P_B$ = 0.55?
+2. What is the probability that the Braves win the World Series given that $P_B$ = x? This will be a figure (see below) with $P_B$ on the x-axis and
+P(Braves win World Series) on the y-axis.
+3. Suppose one could change the World Series to be best-of-9 or some other best-of-X series. What is the shortest series length so that P(Braves win World Series|$P_B$ = .55) ≥ 0.8
+4. What is the shortest series length so that P(Braves win World Series|$P_B$ = x) ≥ 0.8? This will be a figure (see below) with $P_B$ on the x-axis
+and series length is the y-axis.
+5. Calculate P($P_B$ = 0.55|Braves win World Series in 7 games) under the assumption that either $P_B$ = 0.55 or $P_B$ = 0.45. Explain your solution.
+
+
+# Methods
+
+
+```{r}
+library(tidyverse)
+```
+
+## For the first question
+
+- There are three different solutions which can be used to solve the question.
+
+- First, using **Binomial Distribution**. As the rule says, the first team to win 4 out of 7 games wins the championship, if Braves want to win the World Series, they must win the fourth game before Yankees win the fourth game. So I will list all possible senarios to illustrate the probability.  
+
+The most ideal senario is that the Braves win 4 straight games, which means Yankees never win one game. The probability is ${3 \choose 3}*P_B^4$.  
+
+The less most ideal senario is that Braves win the fifth game, and only lose one game in the first four games. The probability is ${4 \choose 3}*P_B^3*(1-P_B)*P_B = {4 \choose 3}*P_B^4*(1-P_B)$. ${4 \choose 3}$ is the number of the total possible senarios that Braves only lose one game in the first four games. For example, the first four games' outcome is: "BBBY", "BBYB", "BYBB", or "YBBB".(B stands for Braves win, and Y stands for Yankees win)  
+
+The third senario is that Braves win the sixth game, and lose two games in the first five games. The probability is ${5 \choose 3}*P_B^3*(1-P_B)^2*P_B = {5 \choose 3}*P_B^4*(1-P_B)^2$. ${5 \choose 3}$ is the number of the total possible senarios that Braves win three games in the first five games. For example, the first five games' outcome may be: "BBBYY", "BBYBY", and so on.  
+
+The last senario is that Braves win the seventh game, and lose three games in the first six games. The probability is ${6 \choose 3}*P_B^3*(1-P_B)^3*P_B = {6 \choose 3}*P_B^4*(1-P_B)^3$. ${6 \choose 3}$ is the number of the total possible senarios that Braves win three games in the first six games. For example, the first six games' outcome may be: "BBBBYY", "BBBYBY", and so on.  
+
+The probability that the Braves win the World Series given that $P_B$ = 0.55 is: 
+  $$ \sum_{i=0}^{3}{i+3 \choose 3}P_B^4(1-P_B)^i$$  
+
+
+- Second, using **Negative Binomial Distribution**, probability that Braves win the World Series is the sum of probabilities Braves lose 0, 1, 2, 3 times before Braves win the fourth games. The probability is:
+  $$ \sum_{i=0}^3dnbinom(i,4,P_B) \text{,i means the number of losses}$$   
+  
+- Third, using **Negative Binomial Cumulative Probability**, probability that Braves win the World Series is the sum of probabilities Braves lose 0, 1, 2, 3 times before Braves win the fourth games. The probability is:
+  $$ pnbinom(3,4,P_B)$$   
+I will use the **Negative Binomial Cumulative Probability** function in R to calculate the probability.   
+
+```{r}
+pnbinom(3,4,.55)
+```
+
+## For the second question
+
+- I can replace the specific $P_B$ = 0.55 to $P_B$ = x.
+
+```{r}
+PB = seq(0.001,1,0.001)
+ProbabilityWin= pnbinom(3,4,PB)
+xy= cbind(PB,ProbabilityWin)
+xy= data.frame(xy)
+ggplot(xy, aes(PB,ProbabilityWin)) + 
+  geom_point() +
+  labs(
+    x="Probability of Braves winning a head-to-head matchup",
+    y="Probability of Braves winning the World Series",
+    title = "Probability of winning the World Series"
+  ) +
+  theme_minimal()
+```
+
+
+
+## For the third question
+
+- To figure out what is the shortest series length so that P(Braves win World Series|$P_B$ = .55) ≥ 0.8, I can first make a plot whose x-axis stands for the series length, and whose y-axis stands for the probability of Braves winning the World Series.
+
+```{r}
+SeriesLength = seq(7,151,2)
+numWin = (SeriesLength+1)/2
+numLose =  SeriesLength-numWin
+ProbabilityWin= pnbinom(numLose,numWin,0.55)
+xy= cbind(SeriesLength,ProbabilityWin)
+xy= data.frame(xy)
+
+ggplot(xy, aes(SeriesLength,ProbabilityWin)) + 
+  geom_point() +
+  labs(
+    x="Probability of Braves winning a head-to-head matchup",
+    y="Probability of Braves winning the World Series",
+    title = "Probability of winning the World Series"
+  ) +
+  geom_hline(yintercept=0.8, linetype="dashed", color = "red") +
+  theme_minimal()
+  
+shortestLength <- xy %>%
+  filter(ProbabilityWin >= 0.8) %>%
+  arrange(SeriesLength) %>%
+  head(1)
+shortestLength
+```
+
+- So the shortest series length is **71**.
+
+## For the fourth question
+
+- To figure out what is the shortest series length so that P(Braves win World Series|$P_B$ = x) ≥ 0.8, I use the similar solution as the third question.  
+
+```{r}
+PB2 = seq(0.55,1,0.001)
+SeriesLength2 = seq(7,100,2)
+numWin2 = (SeriesLength2+1)/2
+numLose2 =  SeriesLength2-numWin2
+shortest = NaN
+i=1
+for(x in PB2) {
+  ProbabilityWin2= pnbinom(numLose2,numWin2,x)
+  xy2= cbind(SeriesLength2,ProbabilityWin2)
+  xy2= data.frame(xy2)
+  shortestLength2 <- xy2 %>%
+    filter(ProbabilityWin2 >= 0.8) %>%
+    arrange(SeriesLength2) %>%
+    head(1)
+  shortest[i] = shortestLength2[1,1]
+  i = i+1
+}
+shortest
+
+xy3= cbind(PB2,shortest)
+xy3= data.frame(xy3)
+ggplot(xy3, aes(PB2,shortest)) + 
+    geom_point() +
+    labs(
+     x="Probability of Braves winning a head-to-head matchup",
+     y="Shortest series length",
+     title = "Shortest series length"
+   ) +
+    theme_minimal()
+```
+
+## For the fifth question
+
+- To calculate P($P_B$ = 0.55|Braves win World Series in 7 games) under the assumption that either $P_B$ = 0.55 or $P_B$ = 0.45. I need to use Bayesian Rule to tranform the original conditional probability.
+$$ P(P_B=0.55 | \text{Braves win World Series in 7 games})$$ 
+$$= P(P_B=0.55 , \text{Braves win}) /P(\text{Braves win}) $$
+$$=P(\text{Braves win} |P_B=0.55)P(P_B=0.55)/(P(\text{Braves win} |P_B=0.55)+P(\text{Braves win} |P_B=0.45)) $$
+```{r}
+PBravesWinConditionPB55 = pnbinom(3,4,0.55)
+PBravesWinConditionPB45 = pnbinom(3,4,0.45)
+PPB55 = 0.5
+answer = PBravesWinConditionPB55*PPB55/(PBravesWinConditionPB55+PBravesWinConditionPB45)
+answer
+```
+
+The P($P_B$ = 0.55|Braves win World Series in 7 games) under the assumption that either $P_B$ = 0.55 or $P_B$ = 0.45 is **`r answer`**.
+
+
+
+
+
