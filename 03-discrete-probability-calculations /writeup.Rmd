@@ -1,5 +1,5 @@
 ---
-title: "Deliverable3"
+title: "Deliverable3:discrete-probability-calculations "
 author: ' Jiayu Shi'
 output:
   html_document:
